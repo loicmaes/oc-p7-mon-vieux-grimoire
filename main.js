@@ -10,7 +10,6 @@ app.use(express.json());
 
 // Apply a global prefix to express api
 const router = express.Router();
-app.use('/api', router);
 
 // Try a database connection
 require('./src/database')(process.env.DATABASE_URL ?? 'mongodb://localhost:27017')
@@ -30,8 +29,10 @@ require('./src/database')(process.env.DATABASE_URL ?? 'mongodb://localhost:27017
       const ctrlPaths = recoverFiles('./src/controllers', true);
       ctrlPaths.length ? ctrlPaths.forEach(path => {
         console.log(`[LOAD - Controller] Loading "${path.substring(2)}"`);
-        require(path)(app);
+        require(path)(router);
       }) : console.log('[LOAD - Controllers] No controllers found!');
+
+      app.use('/api', router);
 
       console.log('---');
 

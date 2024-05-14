@@ -14,18 +14,18 @@ require('./src/database')(process.env.DATABASE_URL ?? 'mongodb://localhost:27017
       console.log('---');
 
       // Load database models
-      const modelsPaths = recoverFiles('src/database/models', true);
+      const modelsPaths = recoverFiles('./src/database/models', true);
       modelsPaths.length ? modelsPaths.forEach(path => {
-        console.log(`[LOAD - Models] Loading "${path}"`);
+        console.log(`[LOAD - Models] Loading "${path.substring(2)}"`);
         require(path);
       }) : console.log('[LOAD - Models] No models found!');
 
       console.log('---');
 
       // Load controllers (routes registering)
-      const ctrlPaths = recoverFiles('src/controllers', true);
+      const ctrlPaths = recoverFiles('./src/controllers', true);
       ctrlPaths.length ? ctrlPaths.forEach(path => {
-        console.log(`[LOAD - Controller] Loading "${path}"`);
+        console.log(`[LOAD - Controller] Loading "${path.substring(2)}"`);
         require(path)(app);
       }) : console.log('[LOAD - Controllers] No controllers found!');
 

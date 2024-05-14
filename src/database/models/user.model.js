@@ -5,6 +5,7 @@ const schema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, 'Email address is required!'],
+    unique: [true, 'Email address is unique! Please try something else.'],
     validate: {
       validator: validators.isEmail,
       message: _ => 'Please enter a valid email address!'

@@ -8,6 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Apply a global prefix to express api
+const router = express.Router();
+app.use('/api', router);
+
 // Try a database connection
 require('./src/database')(process.env.DATABASE_URL ?? 'mongodb://localhost:27017')
     .then(_ => {

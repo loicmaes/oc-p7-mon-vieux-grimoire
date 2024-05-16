@@ -44,6 +44,11 @@ const schema = new mongoose.Schema({
   ],
   averageRating: {
     type: Number,
+    defaultValue: 0,
+    validate: {
+      validator: (value) => validators.minmax(value, 0, 5),
+      message: _ => 'Grade must be between 0 and 5 included!'
+    }
   }
 });
 

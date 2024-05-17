@@ -3,10 +3,12 @@ const path = require('path');
 const {recoverFiles} = require("./src/handlers/files.handler");
 const express = require('express');
 const cors = require('cors');
+const morgan = require('morgan');
 
 const app = express();
 // Apply global middlewares
 app.use(cors());
+app.use(morgan('combined'));
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
@@ -42,5 +44,6 @@ require('./src/database')(process.env.DATABASE_URL ?? 'mongodb://localhost:27017
       const port = parseInt(process.env.API_PORT ?? '3000');
       app.listen(port, () => {
         console.log(`[API] Listening on http://localhost:${port}/`);
+        console.log('---');
       });
     }).catch(console.error);

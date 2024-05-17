@@ -64,4 +64,16 @@ module.exports = (app) => {
       res.status(500).json(e);
     }
   });
+  // ACTION: delete book info
+  app.delete('/books/:id', authRequired, permissionRequired, async (req, res) => {
+    const id = req.params.id;
+
+    try {
+      await Book.findByIdAndDelete(id);
+      res.json('Book deleted!');
+    } catch (e) {
+      console.log(e);
+      res.status(500).json(e);
+    }
+  })
 };

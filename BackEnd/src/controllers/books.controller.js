@@ -4,15 +4,43 @@ const fileInterceptor = require('../middlewares/file.middleware');
 const permissionRequired = require('../middlewares/permission.middleware');
 const multerConfig = require('../configs/multer.config');
 
+function avg (numberArray) {
+  let sum = 0;
+  numberArray.forEach(n => sum += n);
+  return sum / numberArray.length;
+}
+
 module.exports = (app) => {
   // ACTION: recover the whole book list
   app.get('/books', async (req, res) => {
     try {
       const books = await Book.find({}, null, null).exec();
       if (!books.length) return res.status(204).json();
-      res.json(books);
+
+      res.json(books.map(b => {
+        console.log({
+          ...b._doc,
+          averageRating: avg(b.ratings.map(r => r.grade)),
+        });
+        return {
+          ...b._doc,
+          averageRating: avg(b.ratings.map(r => r.grade)),
+        };
+      }));
     } catch (e) {
       res.status(500).json(e);
+    }
+  });
+  // ACTION: recover best ratings
+  app.get('/books/bestrating', async (req, res) => {
+    try {
+      const books = await Book.find().sort({
+        averageRating: -1
+      });
+      return res.status(206).json(books.splice(0, 3));
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json(e);
     }
   });
   // ACTION: recover a book detail (filtered by _id)
@@ -21,7 +49,10 @@ module.exports = (app) => {
     try {
       const book = await Book.findById(id).exec();
       if (!book) return res.status(404).json();
-      res.json(book);
+      res.json({
+        ...book._doc,
+        averageRating: avg(book.ratings.map(r => r.grade)),
+      });
     } catch (e) {
       res.status(500).json(e);
     }
@@ -29,7 +60,8 @@ module.exports = (app) => {
   // ACTION: add a new book to the list
   app.post('/books', authRequired, multerConfig, fileInterceptor, async (req, res) => {
     const userId = req.userId;
-    const { title, author, genre, imageUrl, year } = req.body;
+    const { title, author, genre, year, ratings } = JSON.parse(req.body.book);
+    const { imageUrl } = req.body;
 
     try {
       const data = await Book.create({
@@ -39,9 +71,12 @@ module.exports = (app) => {
         genre,
         imageUrl,
         year,
+        ratings,
+        averageRating: ratings[0].grade ?? 0,
       });
       res.status(201).json(data);
     } catch (e) {
+      console.log(e);
       res.status(500).json(e);
     }
   });
@@ -51,6 +86,8 @@ module.exports = (app) => {
     const { id } = req.params;
     const { title, author, genre, imageUrl, year } = req.body;
 
+    console.log(req.body);
+
     try {
       await Book.findByIdAndUpdate({
         _id: id,
@@ -59,9 +96,10 @@ module.exports = (app) => {
         title, author, genre, imageUrl, year
       });
       const data = await Book.findById(id);
-      res.json(data);
+      return res.json(data);
     } catch (e) {
-      res.status(500).json(e);
+      console.log(e);
+      return res.status(500).json(e);
     }
   });
   // ACTION: delete book info
@@ -75,5 +113,33 @@ module.exports = (app) => {
       console.log(e);
       res.status(500).json(e);
     }
-  })
+  });
+  // ACTION: rate a book
+  app.post('/books/:id/rating', authRequired, async (req, res) => {
+    const id = req.params.id;
+    const userId = req.userId;
+    const { grade } = req.body;
+
+    try {
+      const _book = await Book.findById(id);
+      if (!_book) return res.status(404).json('Book not found!');
+      if (_book.ratings.map(r => r.userId).includes(userId)) return res.status(409).json('You already rated this book!');
+
+      await Book.findByIdAndUpdate(id, {
+        ratings: [
+            ..._book.ratings,
+          {
+            userId,
+            grade: grade ?? 0,
+          },
+        ],
+        averageRating: avg(book.ratings.map(r => r.grade)),
+      });
+
+      const book = await Book.findById(id);
+      return res.status(201).json(book);
+    } catch (e) {
+      return res.status(500).json(e);
+    }
+  });
 };

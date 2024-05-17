@@ -2,7 +2,7 @@ const Book = require('../database/models/book.model');
 const authRequired = require('../middlewares/auth.middleware');
 const fileInterceptor = require('../middlewares/file.middleware');
 const permissionRequired = require('../middlewares/permission.middleware');
-const multer = require('multer');
+const multerConfig = require('../configs/multer.config');
 
 module.exports = (app) => {
   // ACTION: recover the whole book list
@@ -27,7 +27,7 @@ module.exports = (app) => {
     }
   });
   // ACTION: add a new book to the list
-  app.post('/books', authRequired, multer().none(), fileInterceptor, async (req, res) => {
+  app.post('/books', authRequired, multerConfig, fileInterceptor, async (req, res) => {
     const userId = req.userId;
     const { title, author, genre, imageUrl, year } = req.body;
 
@@ -46,7 +46,7 @@ module.exports = (app) => {
     }
   });
   // ACTION: update book info
-  app.put('/books/:id', authRequired, multer().none(), permissionRequired, fileInterceptor, async (req, res) => {
+  app.put('/books/:id', authRequired, multerConfig, permissionRequired, fileInterceptor, async (req, res) => {
     const userId = req.userId;
     const { id } = req.params;
     const { title, author, genre, imageUrl, year } = req.body;

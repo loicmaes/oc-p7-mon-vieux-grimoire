@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const {recoverFiles} = require("./src/handlers/files.handler");
 const express = require('express');
 const cors = require('cors');
@@ -7,6 +8,7 @@ const app = express();
 // Apply global middlewares
 app.use(cors());
 app.use(express.json());
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Apply a global prefix to express api
 const router = express.Router();

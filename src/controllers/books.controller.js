@@ -1,6 +1,8 @@
 const Book = require('../database/models/book.model');
 const authRequired = require('../middlewares/auth.middleware');
 const fileInterceptor = require('../middlewares/file.middleware');
+const permissionRequired = require('../middlewares/permission.middleware');
+const multer = require('multer');
 
 module.exports = (app) => {
   // ACTION: recover the whole book list
@@ -23,9 +25,9 @@ module.exports = (app) => {
     } catch (e) {
       res.status(500).json(e);
     }
-  })
+  });
   // ACTION: add a new book to the list
-  app.post('/books', authRequired, fileInterceptor, async (req, res) => {
+  app.post('/books', authRequired, multer().none(), fileInterceptor, async (req, res) => {
     const userId = req.userId;
     const { title, author, genre, imageUrl, year } = req.body;
 
@@ -42,5 +44,24 @@ module.exports = (app) => {
     } catch (e) {
       res.status(500).json(e);
     }
-  })
+  });
+  // ACTION: update book info
+  app.put('/books/:id', authRequired, multer().none(), permissionRequired, fileInterceptor, async (req, res) => {
+    const userId = req.userId;
+    const { id } = req.params;
+    const { title, author, genre, imageUrl, year } = req.body;
+
+    try {
+      await Book.findByIdAndUpdate({
+        _id: id,
+        userId,
+      }, {
+        title, author, genre, imageUrl, year
+      });
+      const data = await Book.findById(id);
+      res.json(data);
+    } catch (e) {
+      res.status(500).json(e);
+    }
+  });
 };

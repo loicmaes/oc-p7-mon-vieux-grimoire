@@ -2,7 +2,7 @@ const sharp = require('sharp');
 
 module.exports = async (req, res, next) => {
   try {
-    if (!req.file) next();
+    if (!req.file) return next();
 
     const { buffer, originalname } = req.file;
     const filename = originalname.split(' ').join('_');

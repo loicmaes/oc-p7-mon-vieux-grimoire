@@ -11,6 +11,7 @@ async function login (res, email, password) {
     if (!user) return res.status(404).json('User not found!');
     if (!await compare(password, user.password)) return res.status(401).json('Invalid credentials!');
     return res.json({
+      userId: user._id,
       token: await sign({
         userId: user._id
       }, process.env.PRIVATE_ENCRYPTION_KEY, { expiresIn: TOKEN_DURATION }),
@@ -37,6 +38,7 @@ async function register (res, email, password) {
     }, process.env.PRIVATE_ENCRYPTION_KEY, { expiresIn: TOKEN_DURATION });
 
     return res.status(201).json({
+      userId: _id,
       token,
     });
   } catch (e) {

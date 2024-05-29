@@ -8,8 +8,8 @@ const TOKEN_DURATION = process.env.TOKEN_VALIDITY_DURATION ?? '1h';
 async function login (res, email, password) {
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json('User not found!');
-    if (!await compare(password, user.password)) return res.status(401).json('Invalid credentials!');
+    if (!user) return res.status(404).json({message: 'User not found!'});
+    if (!await compare(password, user.password)) return res.status(401).json({message: 'Invalid credentials!'});
     return res.json({
       userId: user._id,
       token: await sign({
@@ -38,6 +38,7 @@ async function register (res, email, password) {
     }, process.env.PRIVATE_ENCRYPTION_KEY, { expiresIn: TOKEN_DURATION });
 
     return res.status(201).json({
+      message: 'Votre compte a bien été créé !',
       userId: _id,
       token,
     });
